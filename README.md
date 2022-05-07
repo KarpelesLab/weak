@@ -16,13 +16,12 @@ var m = weak.NewMap[uint64, Object]()
 // instanciate/get an object
 func Get(id uint64) (*Object, error) {
 	// try to get from cache
-	if obj := m.Get(id); obj != nil {
-		return obj, obj.err
+	var obj *Object
+	if obj = m.Get(id); obj == nil {
+		// create new
+		obj = m.Set(id, &Object{id: id}) // this will return an existing object if already existing
 	}
 
-	// create new
-	obj := &Object{id: id}
-	obj = m.Set(id, obj) // this will return an existing object if already existing
 	obj.initOnce.Do(obj.init) // use sync.Once to ensure init happens only once
 	return obj, obj.err
 }
@@ -74,10 +73,10 @@ type File struct {
 var fileCache = weak.NewMap[string, File]()
 
 func Open(filepath string) (io.ReaderAt, error) (
-	if f := fileCache.Get(filepath); f != nil {
-		return f, f.err
+	var f *File
+	if f = fileCache.Get(filepath); f == nil {
+		f = fileCache.Set(filepath, &File{})
 	}
-	f := fileCache.Set(filepath, &File{})
 	f.open.Do(func() {
 		f.File, f.err = os.Open(filepath)
 	})
