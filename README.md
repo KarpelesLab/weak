@@ -11,7 +11,7 @@ This provides both a `weak.Ref` object to store weak references, and a `weak.Map
 ```go
 import "github.com/KarpelesLab/weak"
 
-m := weak.NewMap[uint64, Object]()
+var m = weak.NewMap[uint64, Object]()
 
 // instanciate/get an object
 func Get(id uint64) (*Object, error) {
@@ -27,8 +27,10 @@ func Get(id uint64) (*Object, error) {
 	return obj, obj.err
 }
 
-obj, err := Get(1234)
-// ...
+func main() {
+	obj, err := Get(1234)
+	// ...
+}
 ```
 
 As to the `Object` implementation, it could look like:
