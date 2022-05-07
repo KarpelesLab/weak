@@ -12,19 +12,40 @@ This provides both a `weak.Ref` object to store weak references, and a `weak.Map
 m := weak.NewMap[uint64, Object]()
 
 // instanciate/get an object
-func Get(id uint64) *Object {
+func Get(id uint64) (*Object, error) {
 	// try to get from cache
 	if obj := m.Get(id); obj != nil {
-		return obj
+		return obj, obj.err
 	}
 
 	// create new
-	obj := &Object{}
+	obj := &Object{id: id}
 	obj = m.Set(id, obj) // this will return an existing object if already existing
 	obj.initOnce.Do(obj.init) // use sync.Once to ensure init happens only once
-	return obj
+	return obj, obj.err
 }
 
 obj = Get(1234)
 // ...
+```
+
+As to the `Object` implementation, it could look like:
+
+```go
+type Object struct {
+	id       uint64
+	initOnce sync.Once
+	f        *os.File
+	err      error
+}
+
+func (o *Object) init() {
+	o.f, o.err = os.Open(fmt.Sprintf("/tmp/file%d.bin", o.id))
+}
+
+func (o *Object) Destroy() {
+	if o.f != nil {
+		o.f.Close()
+	}
+}
 ```
