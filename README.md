@@ -2,7 +2,9 @@
 
 # weakref map in go 1.18
 
-This is a weakref map for Go 1.18
+This is a weakref map for Go 1.18, with some inspiration from [xeus2001's weakref implementation](https://github.com/xeus2001/go-weak).
+
+This provides both a `weak.Ref` object to store weak references, and a `weak.Map` object for maps.
 
 ## Usage
 
