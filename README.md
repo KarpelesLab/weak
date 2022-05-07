@@ -53,3 +53,40 @@ func (o *Object) Destroy() {
 	}
 }
 ```
+
+### File example
+
+Simple example that allows opening multiple files without having to care about closing these and reading random data using `ReadAt`.
+
+```go
+import {
+	"github.com/KarpelesLab/weak"
+	"os"
+	"sync"
+}
+
+type File struct {
+	*os.File
+	err  error
+	open sync.Once
+}
+
+var fileCache = weak.NewMap[string, File]()
+
+func Open(filepath string) (io.ReaderAt, error) (
+	if f := fileCache.Get(filepath); f != nil {
+		return f, f.err
+	}
+	f := fileCache.Set(filepath, &File{})
+	f.open.Do(func() {
+		f.File, f.err = os.Open(filepath)
+	})
+	return f, f.err
+}
+
+func (f *File) Destroy() {
+	if f.File != nil {
+		f.File.Close()
+	}
+}
+```
