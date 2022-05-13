@@ -24,9 +24,10 @@ func (wr *Ref[T]) value() *T {
 func (wr *Ref[T]) Get() *T {
 	for {
 		if wr.state.CaS(refALIVE, refINUSE) {
+			val := wr.value()
 			// all good
 			wr.state.Set(refALIVE) // set back to alive
-			return wr.value()
+			return val
 		}
 		if wr.state.Get() == refDEAD {
 			return nil
@@ -44,6 +45,7 @@ func NewRef[T any](v *T) *Ref[T] {
 	var f func(p *T)
 	f = func(p *T) {
 		if wr.state.CaS(refALIVE, refDEAD) {
+			// we're now refdead, clear the pointer value
 			atomic.StoreUintptr(&wr.hidden, 0)
 			return
 		}
